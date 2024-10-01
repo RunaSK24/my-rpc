@@ -9,4 +9,8 @@ public interface UserService {
      * @return User
      */
     User getUser(User user);
+
+    default float getNumber() {
+        return 10;
+    }
 }
