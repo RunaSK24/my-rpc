@@ -1,5 +1,7 @@
 package cn.edu.szu.myrpc.proxy;
 
+import cn.edu.szu.myrpc.RpcApplication;
+import cn.edu.szu.myrpc.config.RpcConfig;
 import cn.edu.szu.myrpc.model.RpcRequest;
 import cn.edu.szu.myrpc.model.RpcResponse;
 import cn.edu.szu.myrpc.serializer.JdkSerializer;
@@ -11,11 +13,19 @@ import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
+/**
+ * 服务代理
+ */
 public class ServiceProxy implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         // 创建序列化器
         Serializer serializer = new JdkSerializer();
+
+        // 获取目的地址
+        StringBuilder address = new StringBuilder("http://");
+        RpcConfig rpcConfig = RpcApplication.getRpcConfig();
+        address.append(rpcConfig.getServerHost()).append(":").append(rpcConfig.getServerPort());
 
         // 构建RPC请求
         RpcRequest rpcRequest = RpcRequest.builder()
@@ -30,7 +40,7 @@ public class ServiceProxy implements InvocationHandler {
             byte[] result;
 
             // 通过HTTP发送请求
-            try (HttpResponse httpResponse = HttpRequest.post("http://localhost:8080")
+            try (HttpResponse httpResponse = HttpRequest.post(address.toString())
                     .body(bodyBytes)
                     .execute()) {
                 result = httpResponse.bodyBytes();
