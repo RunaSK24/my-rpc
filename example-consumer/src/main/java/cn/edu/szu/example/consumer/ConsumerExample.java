@@ -7,7 +7,7 @@ import cn.edu.szu.myrpc.proxy.ServiceProxyFactory;
 public class ConsumerExample {
     public static void main(String[] args) {
         // 获取代理对象
-        UserService userService = ServiceProxyFactory.getMockProxy(UserService.class);
+        UserService userService = ServiceProxyFactory.getProxy(UserService.class);
 
         // 进行RPC
         User user = new User();
@@ -18,7 +18,7 @@ public class ConsumerExample {
         } else {
             System.out.println("user == null");
         }
-        float number = userService.getNumber();
+        double number = userService.getNumber();
         System.out.println(number);
     }
 }

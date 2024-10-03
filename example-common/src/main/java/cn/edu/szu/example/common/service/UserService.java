@@ -10,7 +10,7 @@ public interface UserService {
      */
     User getUser(User user);
 
-    default float getNumber() {
-        return 10;
+    default double getNumber() {
+        return 10.0;
     }
 }

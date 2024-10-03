@@ -1,10 +1,12 @@
 package cn.edu.szu.myrpc.server;
 
+import cn.edu.szu.myrpc.RpcApplication;
+import cn.edu.szu.myrpc.config.RpcConfig;
 import cn.edu.szu.myrpc.model.RpcRequest;
 import cn.edu.szu.myrpc.model.RpcResponse;
 import cn.edu.szu.myrpc.registry.LocalRegistry;
-import cn.edu.szu.myrpc.serializer.JdkSerializer;
 import cn.edu.szu.myrpc.serializer.Serializer;
+import cn.edu.szu.myrpc.serializer.SerializerFactory;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
@@ -16,7 +18,11 @@ import java.lang.reflect.Method;
 public class HttpServerHandler implements Handler<HttpServerRequest> {
     @Override
     public void handle(HttpServerRequest request) {
-        final Serializer serializer = new JdkSerializer();
+        // 获取RPC配置
+        RpcConfig rpcConfig = RpcApplication.getRpcConfig();
+
+        // 从工厂取得序列化器
+        final Serializer serializer = SerializerFactory.getInstance(rpcConfig.getSerializer());
 
         // 记录接收请求日志
         System.out.println("Received request: " + request.method() + " " + request.uri());
