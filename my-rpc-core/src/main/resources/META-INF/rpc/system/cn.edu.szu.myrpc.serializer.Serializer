@@ -1,0 +1,4 @@
+jdk=cn.edu.szu.myrpc.serializer.JdkSerializer
+json=cn.edu.szu.myrpc.serializer.JsonSerializer
+hessian=cn.edu.szu.myrpc.serializer.HessianSerializer
+kryo=cn.edu.szu.myrpc.serializer.KryoSerializer
