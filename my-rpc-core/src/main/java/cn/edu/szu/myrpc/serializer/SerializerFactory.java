@@ -13,8 +13,8 @@ public class SerializerFactory {
 
     /**
      * 静态工厂方法，获取序列化器实例
-     * @param key
-     * @return
+     * @param key 序列化器标识
+     * @return 序列化器实例
      */
     public static Serializer getInstance(String key) {
         return SpiLoader.getInstance(Serializer.class, key);

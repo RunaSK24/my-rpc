@@ -1,7 +1,10 @@
 package cn.edu.szu.myrpc;
 
+import cn.edu.szu.myrpc.config.RegistryConfig;
 import cn.edu.szu.myrpc.config.RpcConfig;
 import cn.edu.szu.myrpc.constant.RpcConstant;
+import cn.edu.szu.myrpc.registry.Registry;
+import cn.edu.szu.myrpc.registry.RegistryFactory;
 import cn.edu.szu.myrpc.utils.ConfigUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -10,12 +13,18 @@ public class RpcApplication {
     private static volatile RpcConfig rpcConfig;
 
     /**
-     * 配置对象初始化，支持直接传入配置对象
+     * 注册中心初始化、配置对象初始化，支持直接传入配置对象
      * @param newRpcConfig 配置对象
      */
     public static void init(RpcConfig newRpcConfig) {
+        // 配置文件初始化
         rpcConfig = newRpcConfig;
         log.info("RPC init, config = {}", newRpcConfig.toString());
+        // 注册中心初始化
+        RegistryConfig registryConfig = rpcConfig.getRegistryConfig();
+        Registry registry = RegistryFactory.getInstance(registryConfig.getRegistry());
+        registry.init(registryConfig);
+        log.info("registry init, config = {}", registryConfig);
     }
 
     /**
