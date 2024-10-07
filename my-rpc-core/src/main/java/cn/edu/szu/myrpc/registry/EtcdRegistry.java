@@ -3,12 +3,14 @@ package cn.edu.szu.myrpc.registry;
 import cn.edu.szu.myrpc.config.RegistryConfig;
 import cn.edu.szu.myrpc.model.ServiceMetaInfo;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.ConcurrentHashSet;
 import cn.hutool.cron.CronUtil;
 import cn.hutool.cron.task.Task;
 import cn.hutool.json.JSONUtil;
 import io.etcd.jetcd.*;
 import io.etcd.jetcd.options.GetOption;
 import io.etcd.jetcd.options.PutOption;
+import io.etcd.jetcd.watch.WatchEvent;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -31,6 +33,17 @@ public class EtcdRegistry implements Registry {
      * 根节点
      */
     private static final String ETCD_ROOT_PATH = "/rpc/";
+
+    /**
+     * 注册中心服务缓存
+     */
+    private final RegistryServiceCache registryServiceCache = new RegistryServiceCache();
+
+    /**
+     * 正在监听的 key 集合
+     */
+    private final Set<String> watchingKeySet = new ConcurrentHashSet<>();
+
 
     @Override
     public void init(RegistryConfig registryConfig) {
@@ -105,6 +118,12 @@ public class EtcdRegistry implements Registry {
 
     @Override
     public List<ServiceMetaInfo> serviceDiscovery(String serviceKey) {
+        List<ServiceMetaInfo> cachedServiceMetaInfoList = registryServiceCache.readCache(serviceKey);
+        if (cachedServiceMetaInfoList != null) {
+            return cachedServiceMetaInfoList;
+        }
+
+        System.out.println("缓存未命中");
         // 前缀搜索，结尾一定要加 '/'
         String searchPrefix = ETCD_ROOT_PATH + serviceKey + "/";
 
@@ -117,14 +136,48 @@ public class EtcdRegistry implements Registry {
                     .get()
                     .getKvs();
             // 解析服务信息
-            return keyValues.stream()
+            List<ServiceMetaInfo> serviceMetaInfoList = keyValues.stream()
                     .map(keyValue -> {
+                        // 反序列化ServiceMetaInfo对象
                         String value = keyValue.getValue().toString(StandardCharsets.UTF_8);
-                        return JSONUtil.toBean(value, ServiceMetaInfo.class);
+                        ServiceMetaInfo serviceMetaInfo = JSONUtil.toBean(value, ServiceMetaInfo.class);
+                        // 为当前ServiceNode开启监听
+                        String key = keyValue.getKey().toString(StandardCharsets.UTF_8);
+                        watch(key, serviceMetaInfo.getServiceKey());
+                        return serviceMetaInfo;
                     })
                     .collect(Collectors.toList());
+
+            // 写入缓存
+            registryServiceCache.writeCache(serviceKey, serviceMetaInfoList);
+
+            return serviceMetaInfoList;
         } catch (Exception e) {
             throw new RuntimeException("获取服务列表失败", e);
+        }
+    }
+
+    @Override
+    public void watch(String serviceNodeKey, String serviceKey) {
+        Watch watchClient = client.getWatchClient();
+        boolean added = watchingKeySet.add(serviceNodeKey);
+        // 不在已监听列表中，开启监听
+        if (added) {
+            watchClient.watch(
+                    ByteSequence.from(serviceNodeKey, StandardCharsets.UTF_8),
+                    response -> {
+                        for (WatchEvent event : response.getEvents()) {
+                            switch (event.getEventType()) {
+                                case DELETE:
+                                    registryServiceCache.clearCache(serviceKey);
+                                    break;
+                                case PUT:
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+            );
         }
     }
 

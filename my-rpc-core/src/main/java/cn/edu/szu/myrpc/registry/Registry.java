@@ -37,6 +37,12 @@ public interface Registry {
     List<ServiceMetaInfo> serviceDiscovery(String serviceKey);
 
     /**
+     * 监听
+     * @param serviceNodeKey 服务节点键名
+     */
+    void watch(String serviceNodeKey, String serviceKey);
+
+    /**
      * 服务销毁
      */
     void destroy();
