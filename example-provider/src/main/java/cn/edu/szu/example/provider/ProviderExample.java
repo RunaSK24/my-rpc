@@ -8,8 +8,9 @@ import cn.edu.szu.myrpc.model.ServiceMetaInfo;
 import cn.edu.szu.myrpc.registry.LocalRegistry;
 import cn.edu.szu.myrpc.registry.Registry;
 import cn.edu.szu.myrpc.registry.RegistryFactory;
-import cn.edu.szu.myrpc.server.HttpServer;
+import cn.edu.szu.myrpc.server.Server;
 import cn.edu.szu.myrpc.server.VertxHttpServer;
+import cn.edu.szu.myrpc.server.tcp.VertxTcpServer;
 
 public class ProviderExample {
     public static void main(String[] args) {
@@ -19,13 +20,13 @@ public class ProviderExample {
         // 取得RPC配置
         RpcConfig rpcConfig = RpcApplication.getRpcConfig();
 
-        // 根据配置取得注册中心实例
-        RegistryConfig registryConfig = rpcConfig.getRegistryConfig();
-        Registry registry = RegistryFactory.getInstance(registryConfig.getRegistry());
-
         // 在本地注册UserService服务
         String serviceName = UserService.class.getName();
         LocalRegistry.register(serviceName, UserServiceImpl.class);
+
+        // 根据配置取得注册中心实例
+        RegistryConfig registryConfig = rpcConfig.getRegistryConfig();
+        Registry registry = RegistryFactory.getInstance(registryConfig.getRegistry());
 
         // 注册当前服务到注册中心
         ServiceMetaInfo serviceMetaInfo = new ServiceMetaInfo();
@@ -38,9 +39,8 @@ public class ProviderExample {
             throw new RuntimeException(e);
         }
 
-
         // 启动服务
-        HttpServer httpServer = new VertxHttpServer();
-        httpServer.doStart(rpcConfig.getServerPort());
+        Server server = new VertxTcpServer();
+        server.doStart(rpcConfig.getServerPort());
     }
 }

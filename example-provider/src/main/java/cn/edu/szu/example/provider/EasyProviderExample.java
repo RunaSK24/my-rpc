@@ -3,7 +3,7 @@ package cn.edu.szu.example.provider;
 import cn.edu.szu.example.common.service.UserService;
 import cn.edu.szu.myrpc.RpcApplication;
 import cn.edu.szu.myrpc.registry.LocalRegistry;
-import cn.edu.szu.myrpc.server.HttpServer;
+import cn.edu.szu.myrpc.server.Server;
 import cn.edu.szu.myrpc.server.VertxHttpServer;
 
 public class EasyProviderExample {
@@ -15,7 +15,7 @@ public class EasyProviderExample {
         LocalRegistry.register(UserService.class.getName(), UserServiceImpl.class);
 
         // 启动服务
-        HttpServer httpServer = new VertxHttpServer();
-        httpServer.doStart(RpcApplication.getRpcConfig().getServerPort());
+        Server server = new VertxHttpServer();
+        server.doStart(RpcApplication.getRpcConfig().getServerPort());
     }
 }

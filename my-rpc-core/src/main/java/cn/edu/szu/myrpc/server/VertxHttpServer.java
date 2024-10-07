@@ -2,7 +2,7 @@ package cn.edu.szu.myrpc.server;
 
 import io.vertx.core.Vertx;
 
-public class VertxHttpServer implements HttpServer {
+public class VertxHttpServer implements Server {
     @Override
     public void doStart(int port) {
         Vertx vertx = Vertx.vertx();
