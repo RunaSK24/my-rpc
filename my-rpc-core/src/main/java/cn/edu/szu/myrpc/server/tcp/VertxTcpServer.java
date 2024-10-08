@@ -2,7 +2,6 @@ package cn.edu.szu.myrpc.server.tcp;
 
 import cn.edu.szu.myrpc.server.Server;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.NetServer;
 
 public class VertxTcpServer implements Server {

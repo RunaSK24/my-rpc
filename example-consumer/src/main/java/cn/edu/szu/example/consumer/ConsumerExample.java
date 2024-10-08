@@ -19,7 +19,6 @@ public class ConsumerExample {
             } else {
                 System.out.println("user == null");
             }
-            Thread.sleep(5000);
         }
     }
 }
