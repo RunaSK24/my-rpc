@@ -1,7 +1,5 @@
-package cn.edu.szu.myrpc;
+package cn.edu.szu.myrpc.loadbalancer;
 
-import cn.edu.szu.myrpc.loadbalancer.ConsistentHashLoadBalancer;
-import cn.edu.szu.myrpc.loadbalancer.LoadBalancer;
 import cn.edu.szu.myrpc.model.ServiceMetaInfo;
 import org.junit.Assert;
 import org.junit.Test;

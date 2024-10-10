@@ -1,9 +1,7 @@
-package cn.edu.szu.myrpc;
+package cn.edu.szu.myrpc.protocol;
 
 import cn.edu.szu.myrpc.constant.RpcConstant;
 import cn.edu.szu.myrpc.model.RpcRequest;
-import cn.edu.szu.myrpc.protocol.*;
-import cn.edu.szu.myrpc.protocol.ProtocolMessageUtils;
 import cn.hutool.core.util.IdUtil;
 import io.vertx.core.buffer.Buffer;
 import org.junit.Assert;

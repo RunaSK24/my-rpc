@@ -3,6 +3,8 @@ package cn.edu.szu.myrpc.proxy;
 import cn.edu.szu.myrpc.RpcApplication;
 import cn.edu.szu.myrpc.config.RpcConfig;
 import cn.edu.szu.myrpc.constant.RpcConstant;
+import cn.edu.szu.myrpc.fault.retry.RetryStrategy;
+import cn.edu.szu.myrpc.fault.retry.RetryStrategyFactory;
 import cn.edu.szu.myrpc.loadbalancer.LoadBalancer;
 import cn.edu.szu.myrpc.loadbalancer.LoadBalancerFactory;
 import cn.edu.szu.myrpc.model.RpcRequest;
@@ -18,14 +20,13 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 /**
  * 服务代理
  */
 public class ServiceProxy implements InvocationHandler {
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws ExecutionException, InterruptedException {
+    public Object invoke(Object proxy, Method method, Object[] args) throws Exception {
         // 获取RPC配置
         RpcConfig rpcConfig = RpcApplication.getRpcConfig();
 
@@ -57,8 +58,13 @@ public class ServiceProxy implements InvocationHandler {
         requestParams.put("methodName", rpcRequest.getMethodName());
         ServiceMetaInfo selectedServiceMetaInfo = loadBalancer.select(requestParams, serviceMetaInfoList);
 
-        // 通过TCP客户端发送RPC请求并
-        RpcResponse rpcResponse = VertxTcpClient.doRequest(rpcRequest, selectedServiceMetaInfo);
+        // 获得重试策略
+        RetryStrategy retryStrategy = RetryStrategyFactory.getInstance(rpcConfig.getRetryStrategy());
+
+        // 通过TCP客户端发送RPC请求解析应答
+        RpcResponse rpcResponse = retryStrategy.doRetry(() ->
+                VertxTcpClient.doRequest(rpcRequest, selectedServiceMetaInfo)
+        );
         return rpcResponse.getData();
     }
 }

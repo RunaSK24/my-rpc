@@ -1,5 +1,6 @@
 package cn.edu.szu.myrpc.config;
 
+import cn.edu.szu.myrpc.fault.retry.RetryStrategyKeys;
 import cn.edu.szu.myrpc.loadbalancer.LoadBalancerKeys;
 import cn.edu.szu.myrpc.serializer.SerializerKeys;
 import lombok.Data;
@@ -49,5 +50,10 @@ public class RpcConfig {
      * 负载均衡器
      */
     private String loadBalancer = LoadBalancerKeys.ROUND_ROBIN;
+
+    /**
+     * 重试策略
+     */
+    private String retryStrategy = RetryStrategyKeys.NO;
 
 }

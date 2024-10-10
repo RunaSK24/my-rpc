@@ -1,0 +1,2 @@
+no=cn.edu.szu.myrpc.fault.retry.NoRetryStrategy
+fixedInterval=cn.edu.szu.myrpc.fault.retry.FixedIntervalRetryStrategy

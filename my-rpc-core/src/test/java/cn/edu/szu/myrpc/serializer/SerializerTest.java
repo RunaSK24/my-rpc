@@ -1,9 +1,6 @@
-package cn.edu.szu.myrpc;
+package cn.edu.szu.myrpc.serializer;
 
 import cn.edu.szu.myrpc.model.RpcRequest;
-import cn.edu.szu.myrpc.serializer.Serializer;
-import cn.edu.szu.myrpc.serializer.SerializerFactory;
-import cn.edu.szu.myrpc.serializer.SerializerKeys;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,9 +1,7 @@
-package cn.edu.szu.myrpc;
+package cn.edu.szu.myrpc.registry;
 
 import cn.edu.szu.myrpc.config.RegistryConfig;
 import cn.edu.szu.myrpc.model.ServiceMetaInfo;
-import cn.edu.szu.myrpc.registry.EtcdRegistry;
-import cn.edu.szu.myrpc.registry.Registry;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
