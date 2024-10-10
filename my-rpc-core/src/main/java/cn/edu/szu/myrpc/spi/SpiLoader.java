@@ -1,5 +1,7 @@
 package cn.edu.szu.myrpc.spi;
 
+import cn.edu.szu.myrpc.loadbalancer.LoadBalancer;
+import cn.edu.szu.myrpc.registry.Registry;
 import cn.edu.szu.myrpc.serializer.Serializer;
 import cn.hutool.core.io.resource.ResourceUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -48,7 +50,7 @@ public class SpiLoader {
     /**
      * 动态加载的类列表
      */
-    private static final List<Class<?>> LOAD_CLASS_LIST = Arrays.asList(Serializer.class);
+    private static final List<Class<?>> LOAD_CLASS_LIST = Arrays.asList(Serializer.class, Registry.class, LoadBalancer.class);
 
     /**
      * 加载所有类型

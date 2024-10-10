@@ -3,19 +3,21 @@ package cn.edu.szu.myrpc.proxy;
 import cn.edu.szu.myrpc.RpcApplication;
 import cn.edu.szu.myrpc.config.RpcConfig;
 import cn.edu.szu.myrpc.constant.RpcConstant;
+import cn.edu.szu.myrpc.loadbalancer.LoadBalancer;
+import cn.edu.szu.myrpc.loadbalancer.LoadBalancerFactory;
 import cn.edu.szu.myrpc.model.RpcRequest;
 import cn.edu.szu.myrpc.model.RpcResponse;
 import cn.edu.szu.myrpc.model.ServiceMetaInfo;
 import cn.edu.szu.myrpc.registry.Registry;
 import cn.edu.szu.myrpc.registry.RegistryFactory;
-import cn.edu.szu.myrpc.serializer.Serializer;
-import cn.edu.szu.myrpc.serializer.SerializerFactory;
 import cn.edu.szu.myrpc.server.tcp.VertxTcpClient;
 import cn.hutool.core.collection.CollUtil;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -41,9 +43,6 @@ public class ServiceProxy implements InvocationHandler {
             throw new RuntimeException("暂无服务地址");
         }
 
-        // TODO：负载均衡，这里暂时先取第一个服务
-        ServiceMetaInfo selectedServiceMetaInfo = serviceMetaInfoList.get(0);
-
         // 构建RPC请求
         RpcRequest rpcRequest = RpcRequest.builder()
                 .serviceName(method.getDeclaringClass().getName())
@@ -51,6 +50,12 @@ public class ServiceProxy implements InvocationHandler {
                 .parameterTypes(method.getParameterTypes())
                 .args(args)
                 .build();
+
+        // 负载均衡
+        LoadBalancer loadBalancer = LoadBalancerFactory.getInstance(rpcConfig.getLoadBalancer());
+        Map<String, Object> requestParams = new HashMap<>();
+        requestParams.put("methodName", rpcRequest.getMethodName());
+        ServiceMetaInfo selectedServiceMetaInfo = loadBalancer.select(requestParams, serviceMetaInfoList);
 
         // 通过TCP客户端发送RPC请求并
         RpcResponse rpcResponse = VertxTcpClient.doRequest(rpcRequest, selectedServiceMetaInfo);
