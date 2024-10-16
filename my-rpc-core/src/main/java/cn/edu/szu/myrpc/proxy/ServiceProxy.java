@@ -5,6 +5,8 @@ import cn.edu.szu.myrpc.config.RpcConfig;
 import cn.edu.szu.myrpc.constant.RpcConstant;
 import cn.edu.szu.myrpc.fault.retry.RetryStrategy;
 import cn.edu.szu.myrpc.fault.retry.RetryStrategyFactory;
+import cn.edu.szu.myrpc.fault.tolerant.TolerantStrategy;
+import cn.edu.szu.myrpc.fault.tolerant.TolerantStrategyFactory;
 import cn.edu.szu.myrpc.loadbalancer.LoadBalancer;
 import cn.edu.szu.myrpc.loadbalancer.LoadBalancerFactory;
 import cn.edu.szu.myrpc.model.RpcRequest;
@@ -26,7 +28,7 @@ import java.util.Map;
  */
 public class ServiceProxy implements InvocationHandler {
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Exception {
+    public Object invoke(Object proxy, Method method, Object[] args) {
         // 获取RPC配置
         RpcConfig rpcConfig = RpcApplication.getRpcConfig();
 
@@ -58,13 +60,26 @@ public class ServiceProxy implements InvocationHandler {
         requestParams.put("methodName", rpcRequest.getMethodName());
         ServiceMetaInfo selectedServiceMetaInfo = loadBalancer.select(requestParams, serviceMetaInfoList);
 
-        // 获得重试策略
-        RetryStrategy retryStrategy = RetryStrategyFactory.getInstance(rpcConfig.getRetryStrategy());
-
         // 通过TCP客户端发送RPC请求解析应答
-        RpcResponse rpcResponse = retryStrategy.doRetry(() ->
-                VertxTcpClient.doRequest(rpcRequest, selectedServiceMetaInfo)
-        );
+        RpcResponse rpcResponse;
+        try {
+            // 获得重试策略
+            RetryStrategy retryStrategy = RetryStrategyFactory.getInstance(rpcConfig.getRetryStrategy());
+            rpcResponse = retryStrategy.doRetry(() ->
+                    VertxTcpClient.doRequest(rpcRequest, selectedServiceMetaInfo)
+            );
+
+        } catch (Exception e) {
+            // 获得容错策略
+            TolerantStrategy tolerantStrategy = TolerantStrategyFactory.getInstance(rpcConfig.getTolerantStrategy());
+            // 设置传入信息
+            Map<String, Object> context = new HashMap<>();
+            serviceMetaInfoList.remove(selectedServiceMetaInfo); // 去除当前这个失效的服务数据
+            context.put("serviceMetaInfoList", serviceMetaInfoList);
+            context.put("rpcRequest", rpcRequest);
+            rpcResponse = tolerantStrategy.doTolerant(context, e);
+        }
+
         return rpcResponse.getData();
     }
 }

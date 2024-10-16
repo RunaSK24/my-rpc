@@ -1,0 +1,3 @@
+failFast=cn.edu.szu.myrpc.fault.tolerant.FailFastTolerantStrategy
+failSafe=cn.edu.szu.myrpc.fault.tolerant.FailSafeTolerantStrategy
+failOver=cn.edu.szu.myrpc.fault.tolerant.FailOverTolerantStrategy
